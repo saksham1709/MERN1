@@ -5,8 +5,6 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const privateKey = "secretKey";
-
 // register user
 router.post('/register', async (req, res, next) => {
     try {
@@ -56,7 +54,7 @@ router.post('/login', async (req, res, next) => {
                     id: req.body._id,
                     email: req.body.email
                 },
-                privateKey,
+                process.env.SECRET_KEY,
                 {
                     expiresIn: '1h'
                 }
