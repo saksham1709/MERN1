@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
         required: true,
         min: 6,
     },
+    posts: {
+        type: Array,
+        default: []
+    },
     profilePicture: {
         type: String,
         default: '',

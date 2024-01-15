@@ -1,6 +1,22 @@
 const express = require("express");
 const User = require("../models/User");
+const bcrypt = require("bcrypt");
 const router = express.Router();
+
+// Get all users
+router.get('/', async (req, res, next) => {
+    try {
+        const users = await User.find();
+        res.status(200).json({
+            "message": "users found",
+            users: users
+        })
+    } catch (err) {
+        res.status(500).json({
+            error: err
+        })
+    }
+})
 
 // Delete user
 router.delete('/:id', async (req, res, next) => {
@@ -24,6 +40,42 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 // Update user
+router.patch('/:id/update', async (req, res, next) => {
+    if (req.body._id === req.params.id) {
+        if(req.body.password){ 
+            try {
+                await bcrypt.hash(req.body.password, 10, (err, hash) => {
+                    if(err) {
+                        res.status(500).json({
+                            error: err
+                        })
+                    } else {
+                        req.body.password = hash
+                    }
+                })
+            } catch (err) {
+                res.status(500).json({
+                    error: err
+                })
+            }
+        }
+        try {
+            const user = await User.findByIdAndUpdate(req.params.id, { $set: req.body })
+            res.status(201).json({
+                "message": "userupdated successfully",
+                user: user
+            })
+        } catch (err) {
+            res.status(500).json({
+                error: err
+            })
+        }
+    } else {
+        res.status(401).json({
+            "message": "Unauthorized"
+        })
+    }
+})
 
 // Get a user
 router.get('/:id', async (req, res, next) => {
@@ -47,9 +99,9 @@ router.get('/:id', async (req, res, next) => {
     }
 })
 
-// Follow user
+// Follow and unfollow user
 router.post('/:id/follow', async (req, res, next) => {
-    if(req.body._id !== req.params.id) {
+    if (req.body._id !== req.params.id) {
         try {
             const user = await User.findById(req.params.id);
             const currentUser = await User.findById(req.body._id);
@@ -79,7 +131,5 @@ router.post('/:id/follow', async (req, res, next) => {
         })
     }
 })
-
-// Unfollow user
 
 module.exports = router;
